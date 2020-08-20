@@ -1,31 +1,36 @@
+import os
+import json
 import struct
+import socket
 
 class Packet:
 
-    def __init__(self):
+    def __init__(self):    
         self.filename = ''
+        self.filesize = 0
+        self.path = ''
 
-    def write_packet_id(self, packet, id):
-        packet.append(id)
-        return packet
+    def construct_packet(self, packet_id, packet_payload):
+        return struct.pack(f'i {len(packet_payload)}s', packet_id, packet_payload)
 
-    def write_packet_data(self, packet, bdata):
-        packet.append(bdata)
-        return packet
+    def handle_packet(self, incoming_packet):
+        packet_id, packet_payload = struct.unpack(f'i {len(incoming_packet) - 4}s', incoming_packet)
 
-    def packet_handler(self, packet):
-        response = ''
-        packet_id = packet[0]
         if packet_id == 0:
-            for i in range(1, len(packet)):
-                self.filename += str(packet[i], 'utf-8')
+            self.filename = packet_payload.decode('utf-8') 
+            return None
+        
         elif packet_id == 1:
-            with open(self.filename, 'ab') as f:
-                f.write()
+            self.filesize += int(packet_payload.decode('utf-8'))
+            print(f'{self.filesize}')
+            return None
+
         elif packet_id == 2:
-            print(f'2nd element in tuple: {packet[1]}')
-            for i in range(1, len(packet)):
-                response += str(packet[i], 'utf-8')
-                print(f'length of packet: {len(packet)}')
-            print(response)
-            return response
+            with open(self.path + self.filename, 'wb') as f:
+                f.write(packet_payload)
+            current_size = os.path.getsize(self.path + self.filename) # for when it needs to track the progress of the transfer
+            return None
+        
+        elif packet_id == 3:
+            print(f'\u001b[32m File Transfer Complete! \u001b[0m')
+            return packet_payload.decode('utf-8')

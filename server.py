@@ -1,23 +1,24 @@
 import socket 
-import packet
 import struct
+import packet
 
-IP = '192.168.1.146'
-PORT = 12345
+ip = '192.168.1.146'
+port = 12345
 p = packet.Packet()
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((IP, PORT))
+    s.bind((ip, port))
     s.listen()
     conn, addr = s.accept()
     with conn:
         print(f'Connected by {addr}')
         while True:
-            buffer = conn.recv(1025)
+            buffer = conn.recv(8388612)
             if not buffer:
                 break
-            unpacked_buffer = struct.unpack(buffer)
-            print(f'buffer: {unpacked_buffer}')
-            response = p.packet_handler(unpacked_buffer)
-            conn.send(response.encode('utf-8'))
-            break
+            handler = p.handle_packet(buffer)
+            if handler == None:
+                continue
+            else:
+                conn.send(handler.encode())
+                break
