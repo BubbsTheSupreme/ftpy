@@ -16,14 +16,14 @@ try:
 		conn, addr = s.accept()
 		with conn:
 			print(f'Connected by {addr}')
+			print('Receiving...')
 			while True:
-				buffer = conn.recv(1028)
+				buffer = conn.recv(1026)
 				if not buffer:
 					break
 				packet_id, packet_payload = p.unpack_packet(buffer)
 				if packet_id == 0:
-					# filename = packet_payload.decode('ascii')
-					filename = 'test2.txt'
+					filename = packet_payload.decode('ascii')
 
 				elif packet_id == 1:
 					filesize += int(packet_payload.decode('ascii').strip('\x00'))

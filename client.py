@@ -9,6 +9,7 @@ ip = sys.argv[2]
 filename = sys.argv[1]
 filesize = os.path.getsize(filename)
 
+print('Sending...')
 size_packet = p.construct_packet(1, bytes(str(filesize), 'ascii'))
 name_packet = p.construct_packet(0, bytes(filename, 'ascii'))
 
@@ -21,7 +22,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		seek = 0
 		while True:
 			buffer = f.read(1024)
-			print('READ')
 			if not buffer:
 				break
 			file_packet = p.construct_packet(2, buffer)
@@ -39,5 +39,3 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 	s.send(complete_packet)
 	recv_buffer = s.recv(1024)
 	print(recv_buffer.decode())
-
-print('out')
